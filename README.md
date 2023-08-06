@@ -3,6 +3,7 @@
 # __Flickr Image Downloader GUI__
 
 </div>
+
 GUI app for downloading beautiful images in full glory from [Flickr](https://www.flickr.com/)!
 
 ![Main showcase](./main.png)
