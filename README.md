@@ -23,9 +23,8 @@ Some of the key features include:
  - Sharing tab which allows viewing and sharing direct links to selected images;
  - Source links can be pasted or placed in a file;
  - Python based;
- - Easy to use;
  - Fully opens-source;
- - more to come
+ - more to come which may be considered as a feature?
 
 </br>
 
@@ -86,7 +85,7 @@ https://www.flickr.com/photos/steffe/52491777467/in/contacts/
 Example and random photos.
 The app allows an option to download multiple photos. 
 
-    HINT: To easily copy several links to images, you can open each photo in a separate web browser tab. Then, click on the first one. While holding the `Shift` key click on the last one. All of the tabs should be selected now. Next, right-click on the selection and select `Copy sites addresses` and then paste them into the input file. Works on the Opera browser but all of the Chromium-based browsers should have such an option.
+    HINT: To easily copy several links to images, you can open each photo in a separate web browser tab. Then, click on the first one. While holding the `Shift` key click on the last one. All of the tabs should be selected now. Next, right-click on the selection and select `Copy sites addresses` and then paste them into the input file. Works on the Opera browser, but all of the Chromium-based browsers should have such an option.
 
 
 ## Download tab
@@ -113,7 +112,7 @@ After launching the app the following interface will hopefully show up:
 ## Share tab
 The `Share` tab allows sharing of the downloaded files by copying selected image links to the clipboard. 
 
-    NOTE: It does not copy the files, just the direct links to them. You can paste them into Discord chat (or similar messenger) and the embeds should appear (no more than 5 for each message tho).
+    NOTE: It does not copy the files, just the direct links to them. You can paste them into Discord chat (or similar messenger) and the embeds should appear (no more than 5 for each message tho (Discord limitation) ).
 
 ![Main explained](./share_explained.png)
 
@@ -130,7 +129,9 @@ Sometimes window may not scale up properly and images will not display automatic
     You have to share downloaded images just after downloading them!
 
 ## Other tabs are to be implemented 
-
+- Debug for debugging the downloaded images 
+- Info which I should've implemented first
+- maybe an importer to not loose links of the images upon closing the app
 </br>
 
 # 4. Debugging
