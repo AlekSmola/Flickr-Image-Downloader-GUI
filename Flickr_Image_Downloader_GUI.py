@@ -40,6 +40,7 @@ nr_of_photo = 1
 if FlickrFileNames:
     custom_file_names = set()
 
+
 # SharingVariable = []
 # SharingVariable =
 # [
@@ -131,25 +132,50 @@ tab1_layout = [
 
 
 
-tab2_layout1 = [
+# tab2_layout1 = [
             
-            ]
+#             ]
 
-tab2_layout2 = [
-            [sg.Listbox(values=[], enable_events=True, expand_x = True, expand_y = True, size=(40,20), key='_FILE_LIST_')],
-            ]
+# tab2_layout2 = [
+#             [sg.Listbox(values=[], enable_events=True, expand_x = True, expand_y = True, size=(40,20), key='_FILE_LIST_')],
+#             ]
 
-tab2layout1and2 = [
-    [sg.Column(tab2_layout1,element_justification='top', expand_y = True, key = '_CHECKBOXS_COLUMN_'), sg.Column(tab2_layout2,expand_y = True, element_justification='top')],
-    [sg.Push(),sg.Text('Resize to'), sg.In(500, size=(5,1), key='_RESIZE_W_'), sg.In(500, size=(5,1), key='_RESIZE_H_'),sg.Push(),sg.T("\tImage ->")]
-]  
+# tab2layout1and2 = [
+#     [sg.Column(tab2_layout1,element_justification='top', expand_y = True, key = '_CHECKBOXS_COLUMN_'), sg.Column(tab2_layout2,expand_y = True, element_justification='top')],
+#     [sg.Push(),sg.Text('Resize to'), sg.In(500, size=(5,1), key='_RESIZE_W_'), sg.In(500, size=(5,1), key='_RESIZE_H_'),sg.Push(),sg.T("\tImage ->")]
+# ]  
+headings = [ "Filename", "Clicked", "Checked" ]
+# table_data = {}
+table_data = [] # [file_name.jpg, if_clicked_for_preview, if_chosen_for_sharing ]
+tab2_layout1and2 =          [[sg.Table(values=table_data, headings=headings, 
+                    max_col_width=25,
+                    auto_size_columns=True,
+                    justification='center',
+                    display_row_numbers=True,
+                    num_rows=20,
+                    # alternating_row_color='lightblue',
+                    selected_row_colors='black on yellow',
+                    enable_events=True,
+                    expand_x=True,
+                    expand_y=True,
+                    vertical_scroll_only=False,
+                    enable_click_events=True,           # Comment out to not enable header and other clicks
+                    row_height = 25,
+                    text_color = 'orange',
+                    header_font = ("Arial", 15),
+                    font = ("Arial", 12),
+                    key='_FILE_LIST_')
+          ]]
+
+
 tab2_layout3 = [
                 [sg.Image(key='_IMAGE_', )]
             ]
 
 tab2_layout =  [[sg.Push(),sg.T('Here you can quickly share obtained pictures'),sg.Push()],
-                [sg.Text('Folder'), sg.In(f"{os.getcwd()}/{output_folder_name}",size=(60,1), enable_events=True ,key='_IN_FOLDER_'), sg.FolderBrowse(initial_folder = f"{os.getcwd()}/{output_folder_name}", change_submits = True, key="_IN_BROWSE_SHARE_")],
-                [sg.Column(tab2layout1and2, element_justification='top',expand_y = True), sg.Column(tab2_layout3, element_justification='c')],
+                [sg.Text('Folder:'), sg.In(f"{os.getcwd()}/{output_folder_name}",size=(60,1), enable_events=True ,key='_IN_FOLDER_'), sg.FolderBrowse(initial_folder = f"{os.getcwd()}/{output_folder_name}", change_submits = True, key="_IN_BROWSE_SHARE_")],
+                [sg.Column(tab2_layout1and2, element_justification='top',expand_y = True), sg.Column(tab2_layout3, element_justification='c')],
+                [sg.Text('Resize to'), sg.In(500, size=(5,1), key='_RESIZE_W_'), sg.In(500, size=(5,1), key='_RESIZE_H_'),sg.Push()],
                 [sg.Button("Copy selected",enable_events=True, key="_COPY_SELECTED_"), sg.T("", key = "_COPIED_CONF_")]
                ] 
 
@@ -221,29 +247,58 @@ while True:
             file_list = []
         fnames = [f for f in file_list if os.path.isfile(
             os.path.join(folder, f)) and f.lower().endswith((".png", ".jpg", "jpeg", ".tiff", ".bmp"))]
-        window['_FILE_LIST_'].update(fnames)
+        for i in range(0,len(fnames)):
+            # table_data[fnames[i]] = 0
+            table_data.append([fnames[i], False, False])
+        window['_FILE_LIST_'].update(values=table_data)
         addedlayout = []                 # Create an empty list for the user's picks to be appended to 
         for option in fnames:     # Loop through the user's picks, adding the checked choices to a new layout
             addedlayout.append([sg.Check(option, key=f'_{option}PICK')])
         addedlayout.append([sg.VPush()])    
-        window.extend_layout(window['_CHECKBOXS_COLUMN_'], addedlayout) # Extend the -CHECK_PICK- column with the new layout
+        # window.extend_layout(window['_CHECKBOXS_COLUMN_'], addedlayout) # Extend the -CHECK_PICK- column with the new layout
         window['_FILE_LIST_'].expand(True, True)
         window.refresh()
 
     elif event == '_FILE_LIST_':    # A file was chosen from the listbox
-        try:
-            filename = os.path.join(values['_IN_FOLDER_'], values['_FILE_LIST_'][0])
-            if values['_RESIZE_W_'] and values['_RESIZE_H_']:
-                new_size = int(values['_RESIZE_W_']), int(values['_RESIZE_H_'])
-            else:
-                new_size = None
-            window['_IMAGE_'].update(data=convert_to_bytes(filename, resize=new_size))
-        except Exception as E:
-            print(f'** Error {E} **')
-            pass        # something weird happened making the full filename
+        if not values['_FILE_LIST_']:
+            pass
+        else:
+            try:
+                chosen = str(fnames[values['_FILE_LIST_'][0]])         
+                for i, wpis in enumerate(table_data):
+                    # if wpis[0] != chosen:
+                    #     for i,wpis in enumerate(table_data):
+                    #         table_data[i][1] = False
+                    if wpis[0] == chosen:
+                        if wpis[1] == True: # if clicked for preview
+                            table_data[i][2] =  not table_data[i][2] # change downlaod
+                        else:
+                            table_data[i][1] =  not table_data[i][1]    
+                        break
+
+
+
+                window['_FILE_LIST_'].update(values=table_data)
+                # print("Chosen item: " + str(table_data[i]))
+                filename = os.path.join(values['_IN_FOLDER_'], chosen)
+                if values['_RESIZE_W_'] and values['_RESIZE_H_']:
+                    new_size = int(values['_RESIZE_W_']), int(values['_RESIZE_H_'])
+                else:
+                    new_size = None
+                window['_IMAGE_'].update(data=convert_to_bytes(filename, resize=new_size))
+                print("Table data: " + str(table_data))
+            
+            except Exception as E:
+                print(f'** Error {E} **')
+                pass        # something weird happened making the full filename
+    
     if event == '_COPY_SELECTED_':
-        justChecked = [element[1:-4] for element in values if values[element]==True and 'PICK' in element ] #values[-4:] == 'PICK']
-        print(f"Selected images: {justChecked}")
+        # justChecked = [element[1:-4] for element in values if values[element]==True and 'PICK' in element ] #values[-4:] == 'PICK']
+        # print(f"Selected images: {justChecked}")
+        justChecked = []
+        for i,wpis in enumerate(table_data):
+            if wpis[2] == True:
+                justChecked.append(wpis[0])
         try:
             SharingVariable
             clipboard = ''
