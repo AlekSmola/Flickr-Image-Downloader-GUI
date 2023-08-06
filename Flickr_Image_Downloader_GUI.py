@@ -40,7 +40,6 @@ nr_of_photo = 1
 if FlickrFileNames:
     custom_file_names = set()
 
-
 # SharingVariable = []
 # SharingVariable =
 # [
