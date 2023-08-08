@@ -144,26 +144,28 @@ tab1_layout = [
 #     [sg.Column(tab2_layout1,element_justification='top', expand_y = True, key = '_CHECKBOXS_COLUMN_'), sg.Column(tab2_layout2,expand_y = True, element_justification='top')],
 #     [sg.Push(),sg.Text('Resize to'), sg.In(500, size=(5,1), key='_RESIZE_W_'), sg.In(500, size=(5,1), key='_RESIZE_H_'),sg.Push(),sg.T("\tImage ->")]
 # ]  
-headings = [ "Filename", "Clicked", "Checked" ]
+headings = [ "Filename", "Clicked", "⬇" ]
 # table_data = {}
-table_data = [] # [file_name.jpg, if_clicked_for_preview, if_chosen_for_sharing ]
+table_data = ['12', "yrs", "yy"] # [file_name.jpg, if_clicked_for_preview, if_chosen_for_sharing ]
 tab2_layout1and2 =          [[sg.Table(values=table_data, headings=headings, 
-                    max_col_width=25,
-                    auto_size_columns=True,
+                    max_col_width=50,
+                    auto_size_columns=False,
                     justification='center',
-                    display_row_numbers=True,
+                    display_row_numbers=False,
                     num_rows=20,
-                    # alternating_row_color='lightblue',
-                    selected_row_colors='black on yellow',
                     enable_events=True,
                     expand_x=True,
                     expand_y=True,
                     vertical_scroll_only=False,
                     enable_click_events=True,           # Comment out to not enable header and other clicks
                     row_height = 25,
-                    text_color = 'orange',
+                    text_color = 'white',
                     header_font = ("Arial", 15),
                     font = ("Arial", 12),
+                    border_width = 5,
+                    header_background_color = 'black',
+                    col_widths = [25, 1, 5],
+                    selected_row_colors = ('red', 'yellow'),
                     key='_FILE_LIST_')
           ]]
 
@@ -174,7 +176,7 @@ tab2_layout3 = [
 
 tab2_layout =  [[sg.Push(),sg.T('Here you can quickly share obtained pictures'),sg.Push()],
                 [sg.Text('Folder:'), sg.In(f"{os.getcwd()}/{output_folder_name}",size=(60,1), enable_events=True ,key='_IN_FOLDER_'), sg.FolderBrowse(initial_folder = f"{os.getcwd()}/{output_folder_name}", change_submits = True, key="_IN_BROWSE_SHARE_")],
-                [sg.Column(tab2_layout1and2, element_justification='top',expand_y = True), sg.Column(tab2_layout3, element_justification='c')],
+                [sg.Column(tab2_layout1and2, element_justification='top',expand_y = True), sg.Column(tab2_layout3, element_justification='c',expand_y = False)],
                 [sg.Text('Resize to'), sg.In(500, size=(5,1), key='_RESIZE_W_'), sg.In(500, size=(5,1), key='_RESIZE_H_'),sg.Push()],
                 [sg.Button("Copy selected",enable_events=True, key="_COPY_SELECTED_"), sg.T("", key = "_COPIED_CONF_")]
                ] 
@@ -199,6 +201,7 @@ layout = [
     ]
 ]
 
+
 window = sg.Window("Flickr Image Downloader", layout,
                 auto_size_text=True,
                 auto_size_buttons=True,
@@ -206,11 +209,13 @@ window = sg.Window("Flickr Image Downloader", layout,
                 grab_anywhere=False,
                 border_depth=2,
                 finalize=True,
-                size=[700,700],
+                size=[700,800],
                 # element_justification='top',
                 )
 window.bind('<Configure>',"Event")
 
+window['_FILE_LIST_'].ColumnsToDisplay = [ headings[0], headings[2]]
+window['_FILE_LIST_'].Widget.configure(displaycolumns = [ headings[0], headings[2]] )
 ## download tab
 window['_IN_URLS_'].expand(True,False)
 window['_COL1_'].expand(True,True)
@@ -224,7 +229,7 @@ window['_LOGS_OUT_'].expand(True, False)
 
 
 ## share tab
-window['_FILE_LIST_'].expand(False, True)
+# window['_FILE_LIST_'].expand(False, True)
 
 timecopied = 0
 # i = 1
@@ -249,15 +254,16 @@ while True:
             os.path.join(folder, f)) and f.lower().endswith((".png", ".jpg", "jpeg", ".tiff", ".bmp"))]
         for i in range(0,len(fnames)):
             # table_data[fnames[i]] = 0
-            table_data.append([fnames[i], False, False])
+            table_data.append([fnames[i], False, "No"])
         window['_FILE_LIST_'].update(values=table_data)
         addedlayout = []                 # Create an empty list for the user's picks to be appended to 
         for option in fnames:     # Loop through the user's picks, adding the checked choices to a new layout
             addedlayout.append([sg.Check(option, key=f'_{option}PICK')])
         addedlayout.append([sg.VPush()])    
         # window.extend_layout(window['_CHECKBOXS_COLUMN_'], addedlayout) # Extend the -CHECK_PICK- column with the new layout
-        window['_FILE_LIST_'].expand(True, True)
-        window.refresh()
+        
+        # window['_FILE_LIST_'].expand(True, True)
+        # window.refresh()
 
     elif event == '_FILE_LIST_':    # A file was chosen from the listbox
         if not values['_FILE_LIST_']:
@@ -266,19 +272,42 @@ while True:
             try:
                 chosen = str(fnames[values['_FILE_LIST_'][0]])         
                 for i, wpis in enumerate(table_data):
-                    # if wpis[0] != chosen:
-                    #     for i,wpis in enumerate(table_data):
-                    #         table_data[i][1] = False
                     if wpis[0] == chosen:
                         if wpis[1] == True: # if clicked for preview
-                            table_data[i][2] =  not table_data[i][2] # change downlaod
+                            table_data[i][2] = 'Yes' if table_data[i][2] == "No" else 'No' # change downlaod
                         else:
-                            table_data[i][1] =  not table_data[i][1]    
-                        break
-
-
+                            table_data[i][1] =  True    
+                    else:
+                        table_data[i][1] = False
+                print(chosen)
+                # xx = [[f'x{x}', True, False] for x in range(5)]
+                # chosen = 'x1'
+                #for i,wpis in enumerate(xx):
+                #    if wpis[0] == chosen:
+                #        xx[i][2] = not  xx[i][2]
+                # table_data = [[wpis[0], wpis[1], not wpis[2]] if wpis[0] == chosen else wpis for wpis in table_data]
+                # print(table_data)
+                #for i,wpis in enumerate(xx):
+                #    if wpis[0] != chosen:
+                #        xx[i][1] = False
+                # table_data = [[wpis[0], False, wpis[2]] if wpis[0] != chosen else wpis for wpis in table_data]
+                # print(table_data)    
+                #        
+                # data_to_display_in_table = []
+                # row_index = -1
+                # for i, wpis in enumerate(table_data):
+                    # print(wpis)
+                    # data_to_display_in_table.append([wpis[0], wpis[1], 'Yes' if wpis[2] == True else 'No'])
+                    # row_index = i if wpis[2] == True else row_index
+                # print("\n" + table_data + "\n" + data_to_display_in_table )
+                # window['_FILE_LIST_'].update(values=data_to_display_in_table)
 
                 window['_FILE_LIST_'].update(values=table_data)
+
+                # row_index = values['_FILE_LIST_']
+                # print(type(row_index))
+                # window['_FILE_LIST_'].update(row_background_color=((row_index[0]), 'lightpink'))
+                
                 # print("Chosen item: " + str(table_data[i]))
                 filename = os.path.join(values['_IN_FOLDER_'], chosen)
                 if values['_RESIZE_W_'] and values['_RESIZE_H_']:
@@ -286,7 +315,7 @@ while True:
                 else:
                     new_size = None
                 window['_IMAGE_'].update(data=convert_to_bytes(filename, resize=new_size))
-                print("Table data: " + str(table_data))
+                # print("Table data: " + str(table_data))
             
             except Exception as E:
                 print(f'** Error {E} **')
@@ -297,7 +326,7 @@ while True:
         # print(f"Selected images: {justChecked}")
         justChecked = []
         for i,wpis in enumerate(table_data):
-            if wpis[2] == True:
+            if wpis[2] == 'Yes':
                 justChecked.append(wpis[0])
         try:
             SharingVariable
