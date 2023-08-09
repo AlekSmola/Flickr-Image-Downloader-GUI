@@ -146,7 +146,7 @@ tab1_layout = [
 # ]  
 headings = [ "Filename", "Clicked", "⬇" ]
 # table_data = {}
-table_data = ['12', "yrs", "yy"] # [file_name.jpg, if_clicked_for_preview, if_chosen_for_sharing ]
+table_data = ['Select', 'Direcory', 'To', 'Proceed' ] # [file_name.jpg, if_clicked_for_preview, if_chosen_for_sharing ]
 tab2_layout1and2 =          [[sg.Table(values=table_data, headings=headings, 
                     max_col_width=50,
                     auto_size_columns=False,
@@ -183,8 +183,26 @@ tab2_layout =  [[sg.Push(),sg.T('Here you can quickly share obtained pictures'),
 
 tab3_layout = [[sg.T('Debug')]]   
 
-tab4_layout = [[sg.T('About')],
-               [sg.T("Source for tab2 layout: \nhttps://www.pysimplegui.org/en/latest/cookbook/#recipe-convert_to_bytes-function-pil_IMAGE_viewer")],
+tab4_layout = [[sg.T('Sources:')],
+               [sg.T('''
+                    https://www.pysimplegui.org/en/latest/cookbook/#recipe-convert_to_bytes-function-pil_IMAGE_viewer
+                    https://www.pysimplegui.org/en/latest/cookbook/#recipe-convert_to_bytes-function-pil-image-viewer
+                    https://stackoverflow.com/questions/75850950/how-can-i-use-window-size-to-dynamically-change-the-size-of-elements-in-pysimple
+                    https://stackoverflow.com/questions/69410882/how-can-i-collect-and-use-the-listbox-values
+                    https://stackoverflow.com/questions/61978291/how-to-generate-a-column-of-checkboxes-from-a-list
+                    https://stackoverflow.com/questions/70848880/pysimplegui-get-some-lists-then-update-the-layout-using-for
+                    https://github.com/PySimpleGUI/PySimpleGUI/issues/3706
+                    https://stackoverflow.com/questions/65773214/is-it-possible-to-insert-a-checkbox-in-a-pysimplegui-table
+                     ''')],
+               [sg.Text("\nTo-Do stuff:")],
+               [sg.Text('''
+                        - Discord copy to clipboard automatically copies 5 links (add button called: next 5 links)
+                        - Save info about downblaoded links to persistent storage to copy links of photos withoput redownloading (or add option to download aonly data and not photos)
+                        - correct debugging and About tab
+                        - make app look like XXII century
+                        ''')],
+                [sg.Multiline('''Github Link: https://github.com/AlekSmola/Flickr-Image-Downloader-GUI
+                         ''',  size=(80,1))]
                ]   
 
 layout = [
@@ -252,6 +270,7 @@ while True:
             file_list = []
         fnames = [f for f in file_list if os.path.isfile(
             os.path.join(folder, f)) and f.lower().endswith((".png", ".jpg", "jpeg", ".tiff", ".bmp"))]
+        table_data = []
         for i in range(0,len(fnames)):
             # table_data[fnames[i]] = 0
             table_data.append([fnames[i], False, "No"])
