@@ -13,6 +13,9 @@ import base64
 import pyperclip
 
 import time
+
+import pickle #for putting dicts into files
+
 ############### Init variables ###############
 
 FlickrFileNames = True 
@@ -30,7 +33,9 @@ DownloadFiles = True
 
 exported_file = 'exported_urls.txt'
 input_urls = 'input_urls.txt'
+logs_after_download_data = 'logs_after_download_data.pkl'
 output_folder_name = 'gathered'
+
 
 
 statisctics = [0,0] #[success, error]
@@ -200,6 +205,9 @@ tab4_layout = [[sg.T('Sources:')],
                         - Save info about downblaoded links to persistent storage to copy links of photos withoput redownloading (or add option to download aonly data and not photos)
                         - correct debugging and About tab
                         - make app look like XXII century
+                        - after clicking Copy selected, ad unchecking some item remove from clipboard content
+                        - add option to automatically redownload images which failed and print them;
+                        - correct/enhance resizing photos function
                         ''')],
                 [sg.Multiline('''Github Link: https://github.com/AlekSmola/Flickr-Image-Downloader-GUI
                          ''',  size=(80,1))]
@@ -275,10 +283,12 @@ while True:
             # table_data[fnames[i]] = 0
             table_data.append([fnames[i], False, "No"])
         window['_FILE_LIST_'].update(values=table_data)
-        addedlayout = []                 # Create an empty list for the user's picks to be appended to 
-        for option in fnames:     # Loop through the user's picks, adding the checked choices to a new layout
-            addedlayout.append([sg.Check(option, key=f'_{option}PICK')])
-        addedlayout.append([sg.VPush()])    
+
+        # addedlayout = []                 # Create an empty list for the user's picks to be appended to 
+        # for option in fnames:     # Loop through the user's picks, adding the checked choices to a new layout
+        #     addedlayout.append([sg.Check(option, key=f'_{option}PICK')])
+        # addedlayout.append([sg.VPush()])  
+        #   
         # window.extend_layout(window['_CHECKBOXS_COLUMN_'], addedlayout) # Extend the -CHECK_PICK- column with the new layout
         
         # window['_FILE_LIST_'].expand(True, True)
@@ -348,11 +358,17 @@ while True:
             if wpis[2] == 'Yes':
                 justChecked.append(wpis[0])
         try:
-            SharingVariable
+            try: 
+                ToShare = SharingVariable
+                print("Using download info as a source for links")
+            except:
+                with open('logs_after_download_data', 'rb') as f:
+                    ToShare = pickle.load(f)
+                print("Using backup file as a source for links")
             clipboard = ''
             for i in range(len(justChecked)):
                 try:
-                    clipboard += f'{SharingVariable[justChecked[i]]}\n'  
+                    clipboard += f'{ToShare[justChecked[i]]}\n'  
                 except KeyError:
                     print(f"No image source found for: {justChecked[i]}")
 
@@ -665,6 +681,11 @@ while True:
             
 
             window.refresh() 
+    
+        os.chdir(CURR_DIR)
+        with open('logs_after_download_data', 'wb') as f:
+            pickle.dump(SharingVariable, f)
+            
 
         try:
             if sum(statisctics) != links_count:
