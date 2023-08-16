@@ -105,7 +105,7 @@ def convert_to_bytes(file_or_bytes, resize=None):
     if resize:
         new_width, new_height = resize
         scale = min(new_height/cur_height, new_width/cur_width)
-        img = img.resize((int(cur_width*scale), int(cur_height*scale)), PIL.Image.ANTIALIAS)
+        img = img.resize((int(cur_width*scale), int(cur_height*scale)), PIL.Image.Resampling.LANCZOS)
     bio = io.BytesIO()
     img.save(bio, format="PNG")
     del img
@@ -181,9 +181,10 @@ tab2_layout3 = [
 
 tab2_layout =  [[sg.Push(),sg.T('Here you can quickly share obtained pictures'),sg.Push()],
                 [sg.Text('Folder:'), sg.In(f"{os.getcwd()}/{output_folder_name}",size=(60,1), enable_events=True ,key='_IN_FOLDER_'), sg.FolderBrowse(initial_folder = f"{os.getcwd()}/{output_folder_name}", change_submits = True, key="_IN_BROWSE_SHARE_")],
-                [sg.Column(tab2_layout1and2, element_justification='top',expand_y = True), sg.Column(tab2_layout3, element_justification='c',expand_y = False)],
+                [sg.Column(tab2_layout1and2, element_justification='top',expand_y = True, size = (None, 18)), sg.Column(tab2_layout3, element_justification='c',expand_y = False)],
                 [sg.Text('Resize to'), sg.In(500, size=(5,1), key='_RESIZE_W_'), sg.In(500, size=(5,1), key='_RESIZE_H_'),sg.Push()],
-                [sg.Button("Copy selected",enable_events=True, key="_COPY_SELECTED_"), sg.T("", key = "_COPIED_CONF_")]
+                [sg.Button("Copy selected",enable_events=True, key="_COPY_SELECTED_"), sg.T("", key = "_COPIED_CONF_")],
+                
                ] 
 
 tab3_layout = [[sg.T('Debug')]]   
@@ -191,7 +192,6 @@ tab3_layout = [[sg.T('Debug')]]
 tab4_layout = [[sg.T('Sources:')],
                [sg.T('''
                     https://www.pysimplegui.org/en/latest/cookbook/#recipe-convert_to_bytes-function-pil_IMAGE_viewer
-                    https://www.pysimplegui.org/en/latest/cookbook/#recipe-convert_to_bytes-function-pil-image-viewer
                     https://stackoverflow.com/questions/75850950/how-can-i-use-window-size-to-dynamically-change-the-size-of-elements-in-pysimple
                     https://stackoverflow.com/questions/69410882/how-can-i-collect-and-use-the-listbox-values
                     https://stackoverflow.com/questions/61978291/how-to-generate-a-column-of-checkboxes-from-a-list
@@ -202,10 +202,8 @@ tab4_layout = [[sg.T('Sources:')],
                [sg.Text("\nTo-Do stuff:")],
                [sg.Text('''
                         - Discord copy to clipboard automatically copies 5 links (add button called: next 5 links)
-                        - Save info about downblaoded links to persistent storage to copy links of photos withoput redownloading (or add option to download aonly data and not photos)
                         - correct debugging and About tab
                         - make app look like XXII century
-                        - after clicking Copy selected, ad unchecking some item remove from clipboard content
                         - add option to automatically redownload images which failed and print them;
                         - correct/enhance resizing photos function
                         ''')],
@@ -219,7 +217,7 @@ layout = [
                    sg.Tab('Share', tab2_layout, key = "_TAB2_"),
                    sg.Tab('Debug', tab3_layout, key = "_TAB3_"),
                    sg.Tab('About', tab4_layout, key = "_TAB4_"),
-                   ]], expand_x=True, expand_y=True, tab_location = 'top', font = ("Arial", 15) ),
+                   ]], expand_x=True, expand_y=False, tab_location = 'top', font = ("Arial", 15), size = (None, 600) ),
     ],
     [
         sg.Button("Exit", enable_events = True, key = "_EXIT_B_")
@@ -235,7 +233,7 @@ window = sg.Window("Flickr Image Downloader", layout,
                 grab_anywhere=False,
                 border_depth=2,
                 finalize=True,
-                size=[700,800],
+                size=[700,700],
                 # element_justification='top',
                 )
 window.bind('<Configure>',"Event")
@@ -355,8 +353,12 @@ while True:
         # print(f"Selected images: {justChecked}")
         justChecked = []
         for i,wpis in enumerate(table_data):
-            if wpis[2] == 'Yes':
-                justChecked.append(wpis[0])
+            try:
+            
+                if wpis[2] == 'Yes':
+                    justChecked.append(wpis[0])
+            except:
+                print("No data to copy")
         try:
             try: 
                 ToShare = SharingVariable
