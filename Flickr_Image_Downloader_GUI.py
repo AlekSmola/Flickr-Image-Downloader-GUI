@@ -38,7 +38,8 @@ output_folder_name = 'gathered'
 
 
 
-statisctics = [0,0] #[success, error]
+statistics = [0,0] #[success, error]
+failed_to_download = []
 nr_of_photo = 1
 
 
@@ -57,7 +58,7 @@ if FlickrFileNames:
 # SharingVariable = {} #dictionary
 
 def ddownloader(direct_url, printt, titled_name = -1):
-  global outputted_file,statisctics,nr_of_photo,SharingVariable
+  global outputted_file,statistics,nr_of_photo,SharingVariable
   r = requests.get(direct_url)
   if titled_name == -1:
     file_name = direct_url[direct_url.rfind('/')+1:]
@@ -66,7 +67,7 @@ def ddownloader(direct_url, printt, titled_name = -1):
   with open(file_name,'wb') as f:
     f.write(r.content)
   outputted_file.write(direct_url+'\n')
-  statisctics[0] += 1
+  statistics[0] += 1
   nr_of_photo += 1
   printstring = f"\tFile {file_name} saved!\n"
   SharingVariable[file_name] = direct_url  #SharingVariable.append([file_name,direct_url, 0])
@@ -206,6 +207,7 @@ tab4_layout = [[sg.T('Sources:')],
                         - make app look like XXII century
                         - add option to automatically redownload images which failed and print them;
                         - correct/enhance resizing photos function
+                        - code cleanup by adding logging functions
                         ''')],
                 [sg.Multiline('''Github Link: https://github.com/AlekSmola/Flickr-Image-Downloader-GUI
                          ''',  size=(80,1))]
@@ -551,7 +553,7 @@ while True:
         window['_BAR_OUT_'].update(max = links_count, current_count = 0)
         window['_TXT_OUT_'].update(f"{0}/{links_count}")
 
-        statisctics = [0,0] #[success, error]
+        statistics = [0,0] #[success, error]
         nr_of_photo = 1
 
         for url in seen:
@@ -594,7 +596,8 @@ while True:
                     debug.write(Debug_Message5)
                 window['_LOGS_OUT_'].update(f"{window['_LOGS_OUT_'].get()}\n{Debug_Message5}\n")
                 window['_LOGS_OUT_'].set_vscroll_position(1)
-                statisctics[1] += 1
+                statistics[1] += 1
+                failed_to_download.append(url)
                 continue
             Debug_Message6 = "\tGathered source... continuing"
             if Debugging > 0:
@@ -680,21 +683,26 @@ while True:
                     outputt = ddownloader(direct_url, 2)
                     debug.write(outputt + '\n')  
 
+
             
 
             window.refresh() 
     
         os.chdir(CURR_DIR)
+        with open('logs_after_download_data', 'rb') as f:
+            temp = pickle.load(f)
+        SharingVariable = {**SharingVariable, **temp}
         with open('logs_after_download_data', 'wb') as f:
             pickle.dump(SharingVariable, f)
             
 
         try:
-            if sum(statisctics) != links_count:
-                print("some files were not downloaded")
-                window['_LOGS_OUT_'].update(f"{window['_LOGS_OUT_'].get()}\nsome files were not downloaded\n")
+            if sum(statistics) != links_count or len(failed_to_download) > 0:
+                DebugMessage10 = 'Some files were not downloaded, their URLS:\n'
+                print(DebugMessage10 + ''.join(failed_to_download))
+                window['_LOGS_OUT_'].update(f"{window['_LOGS_OUT_'].get()}\n{DebugMessage10}\n{''.join(failed_to_download)}")
                 window['_LOGS_OUT_'].set_vscroll_position(1)
-            Debug_MessageN = f"Total files requested: {links_count} ({sum(statisctics)}), Success: {statisctics[0]}, Errors: {statisctics[1]}\nSuccess percentage: {statisctics[0]/sum(statisctics)*100:.2f}%"
+            Debug_MessageN = f"Total files requested: {links_count} ({sum(statistics)}), Success: {statistics[0]}, Errors: {statistics[1]}\nSuccess percentage: {statistics[0]/sum(statistics)*100:.2f}%"
             print(Debug_MessageN)
             window['_LOGS_OUT_'].update(f"{window['_LOGS_OUT_'].get()}\n{Debug_MessageN}\n")
             window['_LOGS_OUT_'].set_vscroll_position(1)
@@ -713,7 +721,7 @@ while True:
 
         os.chdir(CURR_DIR)
         del links_count
-        del statisctics
+        del statistics
         del nr_of_photo
 
 window.close()
